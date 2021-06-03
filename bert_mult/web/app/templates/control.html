@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Панель управления</h1>
+   <table border="1px" width="100%">
+       <tr>
+           <td>REST 1</td>
+           <td>{% if reststatus1 %}
+            <span style="color: green">Работает</span>
+               {% else %}
+               <span style="color: red">Остановлено</span>
+            {% endif %}</td>
+           <td width="9%"> <form action="/admin" method="POST" style="display:inline">
+    <!-- скрытый параметр -->
+    <input type="hidden" name="index" value="restart1">
+    <input type="submit" class="btn btn-dark" value="restart" style="width: 100%;">
+            </form>
+               <td width="9%">
+           <form action="/admin" method="POST" style="display:inline">
+    <!-- скрытый параметр -->
+    <input type="hidden" name="index" value="start1">
+               {% if reststatus1 %}
+               {% set buttonlabel = "stop" %}
+               {% else %}
+               {% set buttonlabel = "start" %}
+               {% endif %}
+    <input type="submit" class="btn btn-dark" value="{{buttonlabel}}" style="width: 100%;">
+            </form>
+       </td>
+       </tr>
+       <tr>
+           <td>REST 2</td>
+           <td>{% if reststatus2 %}
+            <span style="color: green">Работает</span>
+               {% else %}
+               <span style="color: red">Остановлено</span>
+            {% endif %}</td>
+           <td> <form action="/admin" method="POST" style="display:inline">
+    <!-- скрытый параметр -->
+    <input type="hidden" name="index" value="restart2">
+    <input type="submit" class="btn btn-dark" value="restart" style="width: 100%;">
+            </form>
+               <td>
+           <form action="/admin" method="POST" style="display:inline">
+    <!-- скрытый параметр -->
+    <input type="hidden" name="index" value="start2">
+               {% if reststatus2 %}
+               {% set buttonlabel = "stop" %}
+               {% else %}
+               {% set buttonlabel = "start" %}
+               {% endif %}
+    <input type="submit" class="btn btn-dark" value="{{buttonlabel}}" style="width: 100%;">
+            </form>
+</td>
+       </tr>
+       <tr>
+           <td width="5%">Обучение</td>
+           <td>{% if trainstatus %}
+            <span style="color: orange">{{trainstatustext}}</span>
+               {% else %}
+               <span style="color: green">{{trainstatustext}}</span>
+            {% endif %}</td>
+           <td><form action="/admin" method="POST" style="display:inline">
+            <!-- скрытый параметр -->
+            <input type="hidden" name="index" value="train">
+            <input type="submit" class="btn btn-dark" value="train" style="width: 100%;">
+                    </form></td>
+       </tr>
+   </table>
+<h1>Список моделей</h1>
+<table border="1px" width="100%">
+    <tr>
+        <th width="2%">№ п/п</th><th width="20%">Дата создания</th><th width="60%">Название</th><th>Загрузка</th><th>Удаление</th>
+    </tr>
+        {% for model in models %}
+        <tr>
+        <td>{{model.num}}</td><td>{{model.date}}</td><td>{{model.name}}</td>
+            <td>
+                <form action="/admin" method="POST" style="display:inline" >
+    <!-- скрытый параметр -->
+    <input type="hidden" name="index" value="load_{{model.name}}" >
+    <input type="submit" class="btn btn-dark" value="load" size="100%" style="width: 100%;">
+            </form>
+            </td>
+            <td>
+            <form action="/admin" method="POST" style="display:inline">
+    <!-- скрытый параметр -->
+    <input type="hidden" name="index" value="delete_{{model.name}}">
+    <input type="submit" class="btn btn-dark" value="delete" style="width: 100%;">
+            </form>
+        </td>
+        </tr>
+        {% endfor %}
+</table>
+<form action="/admin" method="POST">
+    <label for="model_name">Имя модели: </label><input type="text" name="model_name">
+    <!-- скрытый параметр -->
+    <input type="hidden" name="index" value="save_model">
+    <input type="submit" class="btn btn-dark" value="save model">
+</form>
+
+{% endblock %}

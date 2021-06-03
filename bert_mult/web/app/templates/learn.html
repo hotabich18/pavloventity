@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<table id="table_types" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>json</th>
+                <th>Дата создания</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+		{% for learnSentence in learnSentences %}
+		<tr>
+			<td>{{learnSentence['id']}}</td>
+			<td>{{learnSentence['sentence']}}</td>
+			<td>{{learnSentence['created_on']}}</td>
+			<td width="25px" height="25px" ><a href="#openModal"><img width="25px" height="25px" src="https://im0-tub-ru.yandex.net/i?id=9c6c84db41fc8721ab470edf47b49d0b&n=13&exp=1"></a></td>
+
+		</tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+	<script type="text/javascript" src='/static/datatables.min.js'></script>
+<script>
+	$(document).ready(function() {
+    $('#table_types').DataTable( {
+        initComplete: function () {
+            this.api().columns().every( function () {
+                var column = this;
+                var select = $('<select><option value=""></option></select>')
+                    .appendTo( $(column.footer()).empty() )
+                    .on( 'change', function () {
+                        var val = $.fn.dataTable.util.escapeRegex(
+                            $(this).val()
+                        );
+
+                        column
+                            .search( val ? '^'+val+'$' : '', true, false )
+                            .draw();
+                    } );
+
+                column.data().unique().sort().each( function ( d, j ) {
+                    select.append( '<option value="'+d+'">'+d+'</option>' )
+                } );
+            } );
+        }
+    } );
+} );
+</script>
+
+
+</form>
+</span></div>
+</div></div><!-- /v_loop --></p>
+
+  </div>
+</div>
+
+{% endblock %}
+
