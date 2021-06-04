@@ -1,9 +1,11 @@
+import threading
 import time
 import docker
 import json
 import os
 import requests
 import shutil
+import ctypes
 from deeppavlov import configs, train_model
 from nltk.tokenize import sent_tokenize
 
@@ -22,6 +24,7 @@ class Server:
         self.deeppavlovpath = deeppavlovpath
         self.savepath = savepath
         self.currentpath = currentpath
+        self.thread = None
 
     def getstatus(self):
         rest = dict(status=self.rest.status, port=self.rest.port, image=self.rest.image, container=self.rest.container)
@@ -397,9 +400,23 @@ class Server:
             self.changerest()
             self.serverstatustext = "Обучение не производится"
             self.serverstatus = False
+        except ZeroDivisionError:
+            self.serverstatustext = "Обучение не производится"
+            self.serverstatus = False
         except:
             self.serverstatustext = "Обучение завершилось с ошибкой"
             self.serverstatus = False
+
+    # Остановка переобучения нейронной сети
+    def stoptrain(self):
+        if self.thread.ident is None:
+            raise ValueError('Поток не запущен')
+        r = ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(self.thread.ident), ctypes.py_object(ZeroDivisionError))
+        if r == 0:
+            raise ValueError('Неправильный идентификатор потока')
+        elif r > 1:
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(self.thread.ident, 0)
+            raise SystemError('Неожиданное состояние среды выполнения')
 
 class Rest:
     def __init__(self, port, image):

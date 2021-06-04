@@ -41,11 +41,21 @@ def addsentence():
 @app.route('/api/train', methods=['POST'])
 def train():
     if server.serverstatus == False:
-        thread = Thread(target=server.train)
-        thread.start()
+        server.thread = Thread(target=server.train)
+        server.thread.start()
         return json.dumps({'status': 'Train started.'}), 200
     else:
         return json.dumps({'status': f'Server busy. Try later. ({server.serverstatustext})'}), 400
+
+# Остановка переобучения нейронной сети
+@app.route('/api/stoptrain', methods=['POST'])
+def stoptrain():
+    try:
+        server.stoptrain()
+        server.thread.join()
+        return json.dumps({'status': 'Train stopped.'}), 200
+    except Exception as e:
+        return json.dumps({'status': str(e)}), 400
 
 # Сохранить модель с указанным именем
 @app.route('/api/savemodel', methods=['POST'])
@@ -84,6 +94,12 @@ def delmodel():
         return json.dumps({'status': 'Bad name'}), 400
     else:
         return json.dumps({'status': f'Server busy. Try later. ({server.serverstatustext})'}), 400
+
+# Получить данные о статусе сервера
+@app.route('/api/getmodels', methods=['POST'])
+def getmodels():
+    res = server.getmodels()
+    return jsonify(res)
 
 # Получить данные о статусе сервера
 @app.route('/api/getstatus', methods=['POST'])

@@ -110,8 +110,14 @@ def admin():
             else:
                 rest2.start()
         if (index == 'train'):
-            thread = Thread(target=server.train)
-            thread.start()
+            server.thread = Thread(target=server.train)
+            server.thread.start()
+        if (index == 'stoptrain'):
+            try:
+                server.stoptrain()
+                server.thread.join()
+            except:
+                pass
         if (index == "save_model"):
             model_name = request.form.get('model_name')
             server.savemodel(model_name)
