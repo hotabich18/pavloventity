@@ -4,9 +4,8 @@ from wtforms import StringField, SubmitField, TextAreaField, BooleanField
 from wtforms.validators import DataRequired, Email
 
 
-class EditType(FlaskForm):
-    name = StringField("B-Имя: ", validators=[DataRequired()])
-    i = StringField("I-Имя: ", validators=[DataRequired()])
+class AddType(FlaskForm):
+    name = StringField("Название сущности: ", validators=[DataRequired()])
     color = StringField("Цвет", validators=[DataRequired()])
     description = StringField("Описание", validators=[DataRequired()])
-    submit = SubmitField("Изменить")
+    submit = SubmitField("Добавить")

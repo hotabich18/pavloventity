@@ -10,7 +10,7 @@
                 <th>I-токен</th>
                 <th>Цвет</th>
                 <th>Описание</th>
-                <th></th>
+                <th>Удалить</th>
             </tr>
         </thead>
         <tbody>
@@ -21,8 +21,11 @@
 			<td>{{type['i']}}</td>
 			<td>{{type['color']}}</td>
 			<td>{{type['description']}}</td>
-			<td width="25px" height="25px" ><a href="#openModal"><img width="25px" height="25px" src="https://im0-tub-ru.yandex.net/i?id=9c6c84db41fc8721ab470edf47b49d0b&n=13&exp=1"></a></td>
-
+            <td><form action="/types#close" method="POST" style="display:inline">
+    <!-- скрытый параметр -->
+    <input type="hidden" name="index" value="delete_{{type['id']}}">
+    <input type="submit" class="btn btn-dark" value="Удалить" style="width: 100%;">
+            </form></td>
 		</tr>
         {% endfor %}
         </tbody>
@@ -64,7 +67,7 @@
 
   <p><!-- v_loop --><div align="center"><div class="v_loop">
 <div class="v_cont"><span style="font-size: 8pt;">
-<form action="" method="post">
+<form method="post">
 
     {{ form.csrf_token() }}
 

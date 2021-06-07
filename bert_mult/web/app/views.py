@@ -4,7 +4,7 @@ from threading import Thread
 from runner import rest1, rest2, server
 from flask import render_template, request
 from app.models import TokenType, LearnSentence
-from app.forms import EditType
+from app.forms import AddType
 
 # with app.app_context():
 #     db.create_all()
@@ -49,23 +49,20 @@ def fillTypes():
     db.session.commit()
 
 # Формирование результатов работы нейронной сети (вход: текст, который будет разделен на сущности)
-@app.route('/', methods=['POST'])
+@app.route('/', methods=['POST', 'GET'])
 def test():
-    text = request.form.get('content_news') # текст, который будет разделен на сущности
-    textList = server.devText(text) # Список абзацев
-    textListArray = server.devSentenses(textList) # Список предложений по абзацам
-    resArray = [] # Массив со словами и токенами, разделенные на предложения и абзацы
-    for paragraph in textListArray:
-        resArray.append(server.devParagraphREST(paragraph))
-    tokensType = db.session.query(TokenType).all() # получение списка сущностей из базы данных
-    html = server.reshtml(resArray, tokensType) # размеченный html код текста с сущностями
-    return render_template('test.html', textarray=resArray, types=tokensType, entitytext=html)
-
-@app.route('/')
-def index():
-    #fillTypes()
-    # copyactualfiles("/disk/deeppavlov/my_dp_components")
-    return render_template('test.html')
+    if request.method == 'POST':
+        text = request.form.get('content_news') # текст, который будет разделен на сущности
+        textList = server.devText(text) # Список абзацев
+        textListArray = server.devSentenses(textList) # Список предложений по абзацам
+        resArray = [] # Массив со словами и токенами, разделенные на предложения и абзацы
+        for paragraph in textListArray:
+            resArray.append(server.devParagraphREST(paragraph))
+        tokensType = db.session.query(TokenType).all() # получение списка сущностей из базы данных
+        html = server.reshtml(resArray, tokensType) # размеченный html код текста с сущностями
+        return render_template('test.html', textarray=resArray, types=tokensType, entitytext=html)
+    else:
+        return render_template('test.html')
 
 # Функция отправки исправленного предложения в промежуточную базу данных переобучения нейронной сети
 @app.route('/sendwords', methods=['POST'])
@@ -82,9 +79,25 @@ def sendwords():
     db.session.commit()
     return json.dumps({'status': 'OK'})
 
-@app.route('/types')
+@app.route('/types', methods=['POST', 'GET'])
 def types():
-    form = EditType()
+    form = AddType()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            name = form.name.data
+            color = form.color.data
+            description = form.description.data
+            b = f'B-{name}'
+            i = f'I-{name}'
+            type = TokenType(name=name, i=i, b=b, color=color, description=description)
+            db.session.add(type)
+            db.session.commit()
+            tokensType = db.session.query(TokenType).all()
+            return render_template('types.html', types=tokensType, form=form)
+        index = request.form['index']
+        if "delete_" in index:
+            TokenType.query.filter(TokenType.id == index.replace("delete_", "")).delete()
+            db.session.commit()
     tokensType = db.session.query(TokenType).all()
     return render_template('types.html', types=tokensType, form=form)
 

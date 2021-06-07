@@ -11,13 +11,6 @@ class DevelopementConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEVELOPMENT_DATABASE_URI') or \
         'postgresql://admin:secret@db:5432/postgres'
 
-
-class TestingConfig(BaseConfig):
-    DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get('TESTING_DATABASE_URI') or \
-			      'postgresql://admin:secret@db:5432/postgres'
-
-
 class ProductionConfig(BaseConfig):
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.environ.get('PRODUCTION_DATABASE_URI') or \
