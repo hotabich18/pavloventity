@@ -12,12 +12,13 @@ services:
       - ./bert_mult/current_model/:/current_model
       - ./bert_mult/deeppavlov/my_dp_envs:/venv
       - ./bert_mult/web:/web
-      - //var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "5550:5000"
 
   pavlov_rest_1:
     restart: always
+    container_name: pavlov_rest_1
     image: pavlovrest
     environment:
        - CONFIG=ner_ontonotes_bert_mult
@@ -30,6 +31,7 @@ services:
 
   pavlov_rest_2:
     restart: always
+    container_name: pavlov_rest_2
     image: pavlovrest
     environment:
        - CONFIG=ner_ontonotes_bert_mult

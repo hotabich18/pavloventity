@@ -4,7 +4,7 @@ import os
 
 # создание экземпляра приложения
 app = Flask(__name__)
-app.config.from_object(os.environ.get('FLASK_ENV') or 'config.DevelopementConfig')
+app.config.from_object(os.environ.get('FLASK_ENV') or 'config.ProductionConfig')
 app.jinja_env.add_extension('jinja2.ext.loopcontrols')
 app.jinja_options['enable_async'] = True
 

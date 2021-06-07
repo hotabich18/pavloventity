@@ -9,5 +9,4 @@ bert_mult/web/venv/*
 bert_mult/web/.idea/*
 bert_mult/web/__pycache__/*
 bert_mult/web/app/__pycache__/*
-# Git
-.git/*
+.idea/*

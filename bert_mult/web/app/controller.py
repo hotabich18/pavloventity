@@ -423,7 +423,7 @@ class Rest:
         self.status = True
         self.port = port
         self.image = image
-        self.container = "deeppavlov_"+ image+"_1"
+        self.container = image
 
     @property
     def socket(self):

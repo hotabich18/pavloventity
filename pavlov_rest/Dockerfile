@@ -1,21 +1,52 @@
-FROM python:3.7.9-stretch
+ARG PYTHON_BASE_IMAGE=python:3.7.9-buster
+FROM $PYTHON_BASE_IMAGE
 
-COPY ./bert_mult/web /web
-RUN mkdir -p /saved_models
-RUN mkdir -p /current_model
+ARG COMMIT=master
 
-# Install curl
-RUN apt-get update && apt-get install -y \
-  curl \
-  && rm -rf /var/lib/apt/lists/*
+EXPOSE 5000
 
-# Install docker client    
-ENV DOCKER_CHANNEL stable
-ENV DOCKER_VERSION 20.10.6
-ENV DOCKER_API_VERSION 1.41
-RUN curl -fsSL "https://download.docker.com/linux/static/${DOCKER_CHANNEL}/x86_64/docker-${DOCKER_VERSION}.tgz" \
-  | tar -xzC /usr/local/bin --strip=1 docker/docker
+WORKDIR /base
 
-RUN python -m pip install -r /web/requirements.txt
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        git \
+        locales && \
+    printf '%s\n%s\n' 'en_US.UTF-8 UTF-8' 'ru_RU.UTF-8 UTF-8' >> /etc/locale.gen && \
+    locale-gen && \
+    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
+        rm -rf /var/lib/apt/lists/* && \
+        pip install virtualenv==16.7.5 && \
+        virtualenv venv && \
+        mkdir -p /venv/dp_internal_token_dir && \
+    rm -rf /root/.cache
 
-CMD ["python", "/web/runner.py", "runserver", "--host", "0.0.0.0", "--port", "5000"]
+ENV PATH=/base/venv/bin:$PATH
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US.UTF-8' LC_ALL='en_US.UTF-8'
+
+RUN git clone https://github.com/deepmipt/DeepPavlov.git && \
+    cd DeepPavlov && \
+    git checkout $COMMIT && \
+    python setup.py develop && \
+    python -c 'import deeppavlov.models' && \
+    rm -rf /root/.cache
+
+CMD if [ ! -z $COMMIT ]; then \
+        cd /base/DeepPavlov && \
+        git fetch --all --tags --prune && \
+        git checkout $COMMIT && \
+        python setup.py develop && \
+        python -c 'import deeppavlov.models'; \
+
+    fi && \
+    if [ -d /venv/$CONFIG ]; then \
+        PATH=/venv/$CONFIG/bin:$PATH; \
+    else \
+        python -m deeppavlov install $CONFIG && \
+        if [ ! -d /venv/dp_internal_token_dir ]; then \
+            mkdir /venv/$CONFIG && \
+            cp -R /base/venv/* /venv/$CONFIG && \
+            sed -i "\|VIRTUAL_ENV=|s|/base||g" "/venv/"$CONFIG"/bin/activate"; \
+        fi; \
+    fi && \
+    python -m deeppavlov riseapi $CONFIG -p $PORT $PARAMS
