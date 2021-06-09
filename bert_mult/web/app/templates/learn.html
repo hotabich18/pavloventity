@@ -8,7 +8,7 @@
                 <th>id</th>
                 <th>json</th>
                 <th>Дата создания</th>
-                <th></th>
+                <th>Удалить</th>
             </tr>
         </thead>
         <tbody>
@@ -17,7 +17,11 @@
 			<td>{{learnSentence['id']}}</td>
 			<td>{{learnSentence['sentence']}}</td>
 			<td>{{learnSentence['created_on']}}</td>
-			<td width="25px" height="25px" ><a href="#openModal"><img width="25px" height="25px" src="https://im0-tub-ru.yandex.net/i?id=9c6c84db41fc8721ab470edf47b49d0b&n=13&exp=1"></a></td>
+			<td width="25px" height="25px" ><form action="/learn" method="POST" style="display:inline">
+    <!-- скрытый параметр -->
+    <input type="hidden" name="index" value="delete_{{learnSentence['id']}}">
+    <input type="submit" class="btn btn-dark" value="Удалить" style="width: 100%;">
+            </form></td>
 
 		</tr>
         {% endfor %}

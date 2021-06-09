@@ -101,8 +101,12 @@ def types():
     tokensType = db.session.query(TokenType).all()
     return render_template('types.html', types=tokensType, form=form)
 
-@app.route('/learn')
+@app.route('/learn', methods=['POST', 'GET'])
 def learn():
+    if request.method == 'POST':
+        index = request.form['index']
+        LearnSentence.query.filter(LearnSentence.id == index.replace("delete_", "")).delete()
+        db.session.commit()
     learnSentences = db.session.query(LearnSentence).all()
     return render_template('learn.html', learnSentences=learnSentences)
 

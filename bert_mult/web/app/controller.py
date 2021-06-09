@@ -9,6 +9,7 @@ import ctypes
 from deeppavlov import configs, train_model
 from nltk.tokenize import sent_tokenize
 
+
 from app import db
 from app.models import LearnSentence
 
@@ -37,13 +38,8 @@ class Server:
             'accept': 'application/json',
             'Content-Type': 'application/json',
         }
-
-        data = '{"x":["' + text + '"]}'
-
-        # response = requests.post('http://localhost:5556/model', headers=headers, data=data.encode("utf-8"))
-        #
-        response = requests.post(f'http://{self.rest.socket}/model', headers=headers, data=data.encode("utf-8"))
-        # print(response.json())
+        data = dict(x=[text])
+        response = requests.post(f'http://{self.rest.socket}/model', headers=headers, json=data)
         return response.json()
 
     @staticmethod
@@ -100,13 +96,12 @@ class Server:
         notSpace = False
         openedQuod = False
         resarray = []
-        sentenseid = 0
         for sentense in paragraph:
             array = []
             id = 0
             wordtemp = ''
             i = ''
-            entytyList = self.getEntityREST(sentense)
+            entytyList = self.getEntityREST(str(sentense))
             for token in entytyList[0][1]:
                 if beginWord:  # если слово начато
                     if "I-" in token:  # если токен начинается с I-, т.е слово не заканчивается на этом слове или символе
@@ -225,14 +220,11 @@ class Server:
     # Функция корректирования данных, котрые отправляются пользователем с браузера в корректную jsonb строку
     def correctJsonString(self, json_obj):
         res = []
-        print(json_obj)
         for item in json_obj:
             if item['token'] != 'O':
-                correctObj = self.getEntityREST(item['word'].replace('"', '\\"'))
-                print(correctObj)
+                correctObj = self.getEntityREST(item['word'])
                 first = True
                 for correctObjItem in correctObj[0][0]:  # добавление токенам B- и I- значений
-                    token = ''
                     if first:
                         token = "B-" + item['token']
                         first = False
@@ -242,7 +234,6 @@ class Server:
                     res.append(correctObjDict)
             else:
                 res.append(item)
-        resString = json.dumps(res)
         return res
 
     # Запись файлов обучения
