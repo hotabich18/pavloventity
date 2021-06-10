@@ -6,7 +6,7 @@ import os
 import requests
 import shutil
 import ctypes
-from deeppavlov import configs, train_model
+from deeppavlov import configs, train_model, build_model
 from nltk.tokenize import sent_tokenize
 
 
@@ -26,6 +26,12 @@ class Server:
         self.savepath = savepath
         self.currentpath = currentpath
         self.thread = None
+        if not os.path.exists(f"{deeppavlovpath}/downloads/bert_models/multi_cased_L-12_H-768_A-12/vocab.txt"):
+            self.model = build_model("ner_ontonotes_bert_mult", download = True)
+        else:
+            self.model = build_model("ner_ontonotes_bert_mult", download = False)
+
+
 
     def getstatus(self):
         rest = dict(status=self.rest.status, port=self.rest.port, image=self.rest.image, container=self.rest.container)
@@ -270,7 +276,11 @@ class Server:
     # Копирование сформированных файлов обучения в папку нейронной сети
     def copyactualfiles(self):
         path = os.path.join(os.path.abspath(os.path.dirname(__file__)), f"{self.deeppavlovpath}/models/ner_ontonotes_bert_mult")
-        shutil.rmtree(path)
+        if os.path.exists(path) and os.path.isdir(path):
+            shutil.rmtree(path)
+        ontonotespath = os.path.join(os.path.abspath(os.path.dirname(__file__)), f"{self.deeppavlovpath}/downloads/ontonotes/")
+        if not os.path.exists(ontonotespath):
+            os.makedirs(ontonotespath)
         shutil.copyfile(f"{self.webpath}/actual txt/train.txt", f"{self.deeppavlovpath}/downloads/ontonotes/train.txt")
         shutil.copyfile(f"{self.webpath}/actual txt/test.txt", f"{self.deeppavlovpath}/downloads/ontonotes/test.txt")
         shutil.copyfile(f"{self.webpath}/actual txt/valid.txt", f"{self.deeppavlovpath}/downloads/ontonotes/valid.txt")
@@ -395,7 +405,7 @@ class Server:
             self.serverstatustext = "Обучение не производится"
             self.serverstatus = False
         except:
-            self.serverstatustext = "Обучение завершилось с ошибкой"
+            self.serverstatustext = f"Обучение завершилось с ошибкой ({self.serverstatustext})"
             self.serverstatus = False
 
     # Остановка переобучения нейронной сети
