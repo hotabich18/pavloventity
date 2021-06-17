@@ -110,6 +110,21 @@ def learn():
     learnSentences = db.session.query(LearnSentence).all()
     return render_template('learn.html', learnSentences=learnSentences)
 
+@app.route('/logs', methods=['GET'])
+def logs():
+    f = open('/web/logs/server.log')
+    logs = []
+    string = ""
+    for line in f:
+        if(line[0].isdigit()):
+            if string != "":
+                logs.append(string)
+                string = ""
+            string += line
+        else:
+            string += f"\n{line}"
+    return render_template('logs.html', logs=logs)
+
 @app.route('/admin', methods=['post', 'get'])
 def admin():
     if request.method == 'POST':

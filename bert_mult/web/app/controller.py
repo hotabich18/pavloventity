@@ -10,7 +10,7 @@ from deeppavlov import configs, train_model, build_model
 from nltk.tokenize import sent_tokenize
 
 
-from app import db
+from app import db, app
 from app.models import LearnSentence
 
 
@@ -20,7 +20,7 @@ class Server:
         self.rest2 = rest2
         self.rest = rest1
         self.serverstatus = False
-        self.serverstatustext = "Обучение не производится"
+        self.__serverstatustext = "Обучение не производится"
         self.webpath = webpath
         self.deeppavlovpath = deeppavlovpath
         self.savepath = savepath
@@ -32,6 +32,13 @@ class Server:
             self.model = build_model("ner_ontonotes_bert_mult", download = False)
 
 
+    @property
+    def serverstatustext(self):
+        return self.__serverstatustext
+    @serverstatustext.setter
+    def serverstatustext(self, value):
+        self.__serverstatustext = value
+        app.logger.info(value)
 
     def getstatus(self):
         rest = dict(status=self.rest.status, port=self.rest.port, image=self.rest.image, container=self.rest.container)
