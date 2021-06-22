@@ -1,3 +1,4 @@
+import sqlalchemy
 from app import app, db
 import json
 from threading import Thread
@@ -5,6 +6,7 @@ from runner import rest1, rest2, server
 from flask import render_template, request
 from app.models import TokenType, LearnSentence
 from app.forms import AddType
+from sqlalchemy import exc
 
 # with app.app_context():
 #     db.create_all()
@@ -58,6 +60,13 @@ def test():
         resArray = [] # Массив со словами и токенами, разделенные на предложения и абзацы
         for paragraph in textListArray:
             resArray.append(server.devParagraphREST(paragraph))
+        try:
+            tokensType = db.session.query(TokenType).all()
+        except sqlalchemy.exc.ProgrammingError:
+            with app.app_context():
+                db.create_all()
+                db.session.commit()
+                fillTypes()
         tokensType = db.session.query(TokenType).all() # получение списка сущностей из базы данных
         html = server.reshtml(resArray, tokensType) # размеченный html код текста с сущностями
         return render_template('test.html', textarray=resArray, types=tokensType, entitytext=html)
