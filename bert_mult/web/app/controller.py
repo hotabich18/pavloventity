@@ -6,12 +6,16 @@ import os
 import requests
 import shutil
 import ctypes
+
+import sqlalchemy.exc
 from deeppavlov import configs, train_model, build_model
 from nltk.tokenize import sent_tokenize
+from sqlalchemy import exc
+
 
 
 from app import db, app
-from app.models import LearnSentence
+from app.models import LearnSentence, TokenType
 
 
 class Server:
@@ -30,6 +34,63 @@ class Server:
             self.model = build_model("ner_ontonotes_bert_mult", download = True)
         else:
             self.model = build_model("ner_ontonotes_bert_mult", download = False)
+        try:
+            db.session.query(TokenType).first()
+        except sqlalchemy.exc.ProgrammingError:
+            with app.app_context():
+                db.create_all()
+                db.session.commit()
+                self.fillTypes()
+
+    # Добавить токены в бд
+    @staticmethod
+    def fillTypes():
+        # Токены по умолчанию
+        tokensType = [
+            {'name': 'PERSON', 'b': 'B-PERSON', 'i': 'I-PERSON', 'color': 'RoyalBlue',
+             'description': 'Люди, в том числе и вымышленные'},
+            {'name': 'ORG', 'b': 'B-ORG', 'i': 'I-ORG', 'color': 'DarkTurquoise',
+             'description': 'Компании, агенства, учреждения и '
+                            'тд.'},
+            {'name': 'LOC', 'b': 'B-LOC', 'i': 'I-LOC', 'color': 'LimeGreen', 'description': 'Место'},
+            {'name': 'DATE', 'b': 'B-DATE', 'i': 'I-DATE', 'color': 'Black',
+             'description': 'Абсолютная или относительная дата или '
+                            'период'},
+            {'name': 'MONEY', 'b': 'B-MONEY', 'i': 'I-MONEY', 'color': 'Gray', 'description': 'Денежная единица'},
+            {'name': 'NORP', 'b': 'B-NORP', 'i': 'I-NORP', 'color': 'FireBrick',
+             'description': 'Национальность, религия или '
+                            'политическая '
+                            'группа'},
+            {'name': 'GPE', 'b': 'B-GPE', 'i': 'I-GPE', 'color': 'Gold', 'description': 'Страны, города, штаты'},
+            {'name': 'FAC', 'b': 'B-FAC', 'i': 'I-FAC', 'color': 'Maroon',
+             'description': 'Здания, аеропорты, дороги, мосты и тд'},
+            {'name': 'PRODUCT', 'b': 'B-PRODUCT', 'i': 'I-PRODUCT', 'color': 'Chocolate',
+             'description': 'Объекты, машины, еда и тд'},
+            {'name': 'EVENT', 'b': 'B-EVENT', 'i': 'I-EVENT', 'color': 'MidnightBlue',
+             'description': 'Именные ураганы, сражения, '
+                            'спортивные '
+                            'события и тд'},
+            {'name': 'WORK_OF_ART', 'b': 'B-WORK_OF_ART', 'i': 'I-WORK_OF_ART', 'color': 'DarkGreen',
+             'description': 'Названия книг, песен и тд'},
+            {'name': 'LAW', 'b': 'B-LAW', 'i': 'I-LAW', 'color': 'HotPink', 'description': 'Нормативно-правовые акты'},
+            {'name': 'LANGUAGE', 'b': 'B-LANGUAGE', 'i': 'I-LANGUAGE', 'color': 'SteelBlue', 'description': 'Язык'},
+            {'name': 'TIME', 'b': 'B-TIME', 'i': 'I-TIME', 'color': 'DarkOliveGreen',
+             'description': 'Время, которое меньше дня'},
+            {'name': 'PERCENT', 'b': 'B-PERCENT', 'i': 'I-PERCENT', 'color': 'Khaki', 'description': 'Процент'},
+            {'name': 'QUANTITY', 'b': 'B-QUANTITY', 'i': 'I-QUANTITY', 'color': 'Red',
+             'description': 'Единица имерения, например вес '
+                            'или длина'},
+            {'name': 'ORDINAL', 'b': 'B-ORDINAL', 'i': 'I-ORDINAL', 'color': 'DarkBlue',
+             'description': 'Первый, второй и тд'},
+            {'name': 'CARDINAL', 'b': 'B-CARDINAL', 'i': 'I-CARDINAL', 'color': 'DarkBlue',
+             'description': 'Числа, которые не попадают ни в '
+                            'одну категорию'},
+            {'name': 'ARM', 'b': 'B-ARM', 'i': 'I-ARM', 'color': 'Aqua', 'description': 'Вооружение РФ'}
+        ]
+        for t in tokensType:
+            type = TokenType(name=t['name'], i=t['i'], b=t['b'], color=t['color'], description=t['description'])
+            db.session.add(type)
+        db.session.commit()
 
 
     @property
