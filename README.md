@@ -48,8 +48,10 @@ sudo docker-compose up
 
 #API
 
-** Обработка текста (выявление сущностей) **
+**Обработка текста (выявление сущностей)**
+
 POST: http://localhost:5550/api/getentity
+
 Body raw: {"text": "your text"}
 ```bash
 curl --location --request POST 'http://localhost:5550/api/getentity' \
@@ -70,8 +72,10 @@ curl --location --request POST 'http://localhost:5550/api/getentity' \
       ]
     ]
 ```
-** Добавить тип сущности **
+**Добавить тип сущности**
+
 POST: http://localhost:5550/api/addentity
+
 Body raw: {"name": "TEST", "i": "I-TEST", "b": "B-TEST", "color": "#d53032", "description": "test description"}
 ```bash
 curl --location --request POST 'http://localhost:5550/api/addentity' \
@@ -83,8 +87,10 @@ curl --location --request POST 'http://localhost:5550/api/addentity' \
   "status": "OK"
 }
 ```
-** Запуск обучения модели **
+**Запуск обучения модели**
+
 POST: http://localhost:5550/api/train
+
 ```bash
 curl --location --request POST 'http://localhost:5550/api/train'
 ```
@@ -94,7 +100,8 @@ curl --location --request POST 'http://localhost:5550/api/train'
   "status": "Train started."
 }
 ```
-** Отмена обучения модели **
+**Отмена обучения модели**
+
 POST: http://localhost:5550/api/stoptrain
 
 ```bash
@@ -106,8 +113,10 @@ curl --location --request POST 'http://localhost:5550/api/stoptrain'
   "status": "Train stopped."
 }
 ```
-** Добавить предложение для дообучения модели **
+**Добавить предложение для дообучения модели**
+
 POST: http://localhost:5550/api/addsentence
+
 Body raw:
 ```bash
 [{"word":"Высокоточный","token":"O"},{"word":"ракетный","token":"O"},{"word":"комплекс","token":"O"},{"word":"«Искандер»","token":"ARM"},{"word":"предназначен","token":"O"},{"word":"для","token":"O"},{"word":"уничтожения","token":"O"},{"word":"вражеских","token":"O"},{"word":"средств","token":"O"},{"word":"огневого","token":"O"},{"word":"поражения","token":"O"},{"word":"далеко","token":"O"},{"word":"за","token":"O"},{"word":"линией","token":"O"},{"word":"фронта","token":"O"},{"word":".","token":"O"}]
@@ -122,8 +131,10 @@ curl --location --request POST 'http://localhost:5550/api/getentity' \
   "status": "OK"
 }
 ```
-** Загрузка сохраненной модели **
+**Загрузка сохраненной модели**
+
 POST: http://localhost:5550/api/loadmodel?name=test
+
 PARAMS: name: название модели
 
 ```bash
@@ -136,8 +147,10 @@ curl --location --request POST 'http://localhost:5550/api/loadmodel?name=test'
 }
 ```
 
-** Сохранение модели **
+**Сохранение модели**
+
 POST: http://localhost:5550/api/savemodel?name=test
+
 PARAMS: name: название модели
 
 ```bash
@@ -150,8 +163,10 @@ curl --location --request POST 'http://localhost:5550/api/savemodel?name=test1'
 }
 ```
 
-** Удаление сохраненной модели **
+**Удаление сохраненной модели**
+
 POST: http://localhost:5550/api/delmodel?name=test1
+
 PARAMS: name: название модели
 
 ```bash
@@ -163,8 +178,10 @@ curl --location --request POST 'http://localhost:5550/api/delmodel?name=test1'
   "status": "OK"
 }
 ```
-** Статус сервера **
+**Статус сервера**
+
 POST: http://localhost:5550/api/getstatus
+
 ```bash
 curl --location --request POST 'http://localhost:5550/api/getstatus'
 ```
@@ -181,7 +198,8 @@ curl --location --request POST 'http://localhost:5550/api/getstatus'
   "statustext": "Обучение не производится"
 }
 ```
-** Список сохраненных моделей **
+**Список сохраненных моделей**
+
 POST: http://localhost:5550/api/getmodels
 
 ```bash
