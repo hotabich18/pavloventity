@@ -41,6 +41,22 @@ class Server:
                 db.create_all()
                 db.session.commit()
                 self.fillTypes()
+        if not os.path.exists(f"{currentpath}/downloads/bert_models/multi_cased_L-12_H-768_A-12/vocab.txt"):
+            for root, dirs, files in os.walk(self.currentpath):
+                for f in files:
+                    os.unlink(os.path.join(root, f))
+                for d in dirs:
+                    shutil.rmtree(os.path.join(root, d))
+            for src_dir, dirs, files in os.walk(f"{self.deeppavlovpath}"):
+                dst_dir = src_dir.replace(f"{self.deeppavlovpath}", self.currentpath, 1)
+                if not os.path.exists(dst_dir):
+                    os.makedirs(dst_dir)
+                for file_ in files:
+                    src_file = os.path.join(src_dir, file_)
+                    dst_file = os.path.join(dst_dir, file_)
+                    if os.path.exists(dst_file):
+                        os.remove(dst_file)
+                    shutil.copy(src_file, dst_dir)
 
     # Добавить токены в бд
     @staticmethod
