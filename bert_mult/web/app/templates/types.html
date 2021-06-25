@@ -23,7 +23,7 @@
 			<td>{{type['i']}}</td>
 			<td>{{type['color']}}</td>
 			<td>{{type['description']}}</td>
-            <td><form action="/types#close" method="POST" style="display:inline">
+            <td><form action="/types" method="POST" style="display:inline">
     <!-- скрытый параметр -->
     <input type="hidden" name="index" value="delete_{{type['id']}}">
     <input type="submit" class="btn btn-dark" value="Удалить" style="width: 100%;">
@@ -69,7 +69,7 @@
 
   <p><!-- v_loop --><div align="center"><div class="v_loop">
 <div class="v_cont"><span style="font-size: 8pt;">
-<form method="post">
+<form method="post" action="/types#close">
 
     {{ form.csrf_token() }}
 

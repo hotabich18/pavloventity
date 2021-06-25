@@ -74,11 +74,32 @@
 <h1>Список моделей</h1>
 <table border="1px" width="100%">
     <tr>
-        <th width="2%">№ п/п</th><th width="20%">Дата создания</th><th width="60%">Название</th><th>Загрузка</th><th>Удаление</th>
+        <th width="2%">№ п/п</th>
+        <th width="10%">Дата создания</th>
+        <th width="8%">Название</th>
+        <th width="7%">Точность</th>
+        <th width="5%">Длительность обучения</th>
+        <th width="50%">Показать логи</th>
+        <th>Загрузка</th>
+        <th>Удаление</th>
     </tr>
         {% for model in models %}
         <tr>
-        <td>{{model.num}}</td><td>{{model.date}}</td><td>{{model.name}}</td>
+        <td>{{model.num}}</td>
+            <td>{{model.date}}</td>
+            <td>{{model.name}}</td>
+            <td>{{model.ner_f1}}</td>
+            <td>{{model.time}}</td>
+            <td>{% if model.valid_log %}
+  <div id="{{model.num}}" style="border:1px solid black; display:none;">{{model.valid_log}}</div>
+
+<button id="{{model.num}}_2_1" onclick="document.getElementById('{{model.num}}').style.display='none'; document.getElementById('{{model.num}}_2_1').style.display='none'; document.getElementById('{{model.num}}_2_2').style.display='block';" style="display:none;">Скрыть</button>
+
+<button id="{{model.num}}_2_2" onclick=" document.getElementById('{{model.num}}').style.display='block'; document.getElementById('{{model.num}}_2_2').style.display='none'; document.getElementById('{{model.num}}_2_1').style.display='block';">Показать</button>
+{% endif %}
+
+
+</td>
             <td>
                 <form action="/admin" method="POST" style="display:inline" >
     <!-- скрытый параметр -->

@@ -11,6 +11,8 @@ import sqlalchemy.exc
 from deeppavlov import configs, train_model, build_model
 from nltk.tokenize import sent_tokenize
 from sqlalchemy import exc
+from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
+
 
 
 
@@ -451,17 +453,62 @@ class Server:
             self.rest = self.rest1
             self.rest2.stop()
 
-    # Получить список доступных моделей
+    # # Получить список доступных моделей
+    # def getmodels(self):
+    #     res = []
+    #     n = 1
+    #     files = os.listdir(self.savepath)
+    #     for f in files:
+    #         date = time.ctime(os.path.getmtime(f"{self.savepath}/{f}"))
+    #         model = dict(name=f, date=date, num = n)
+    #         n += 1
+    #         res.append(model)
+    #     return res
+
+    @staticmethod
+    def convert_to_preferred_format(sec):
+        sec = sec % (24 * 3600)
+        hour = sec // 3600
+        sec %= 3600
+        min = sec // 60
+        sec %= 60
+        return "%02d:%02d:%02d" % (hour, min, sec)
+
+
     def getmodels(self):
         res = []
         n = 1
         files = os.listdir(self.savepath)
         for f in files:
             date = time.ctime(os.path.getmtime(f"{self.savepath}/{f}"))
-            model = dict(name=f, date=date, num = n)
+            logpath = f'{self.savepath}/{f}/models/ner_ontonotes_bert_mult/logs/valid_log'
+            if os.path.exists(logpath):
+                files = os.listdir(logpath)
+                logfile = files[0]
+                if len(files) > 1:
+                    for file in files:
+                        if os.path.getsize(f'{logpath}/{file}') > os.path.getsize(f'{logpath}/{logfile}'):
+                            logfile = file
+                event_acc = EventAccumulator(f'{logpath}/{logfile}')
+                event_acc.Reload()
+                ner_f1 = 0
+                modeltime = event_acc.Scalars("every_n_batches/ner_f1")[-1][0] - \
+                            event_acc.Scalars("every_n_batches/ner_f1")[0][0]
+                valid_log = []
+                for data in event_acc.Scalars("every_n_batches/ner_f1"):
+                    if data[2] > ner_f1:
+                        ner_f1 = data[2]
+                    valid_log.append(dict(time=time.ctime(data[0]), step=data[1], ner_f1=data[2]))
+                model = dict(name=f, date=time.ctime(event_acc.Scalars("every_n_batches/ner_f1")[-1][0]), num=n,
+                             ner_f1=ner_f1, time=Server.convert_to_preferred_format(modeltime), valid_log = str(valid_log))
+                res.append(model)
+            else:
+                model = dict(name=f, date=date, num=n)
+                res.append(model)
             n += 1
-            res.append(model)
         return res
+
+
 
     # Запуск переобучения нейронной сети
     def train(self):
