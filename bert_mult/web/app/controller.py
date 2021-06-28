@@ -6,7 +6,8 @@ import os
 import requests
 import shutil
 import ctypes
-
+import math
+from random import shuffle
 import sqlalchemy.exc
 from deeppavlov import configs, train_model, build_model
 from nltk.tokenize import sent_tokenize
@@ -351,9 +352,10 @@ class Server:
         shutil.copyfile(f"{self.webpath}/original txt/test.txt", f"{self.webpath}/actual txt/test.txt")
         shutil.copyfile(f"{self.webpath}/original txt/valid.txt", f"{self.webpath}/actual txt/valid.txt")
         learnSentences = db.session.query(LearnSentence).all()
+        shuffle(learnSentences)
         count = len(learnSentences)
-        testcount = int(count * 0.1)
-        validcount = int(count * 0.1)
+        testcount = math.ceil(count * 0.1)
+        validcount = math.ceil(count * 0.1)
         traincount = count - testcount - validcount
         Server.writetxtfile(f"{self.webpath}/actual txt/train.txt", learnSentences, traincount)
         Server.writetxtfile(f"{self.webpath}/actual txt/test.txt", learnSentences, testcount)
@@ -367,9 +369,9 @@ class Server:
         ontonotespath = os.path.join(os.path.abspath(os.path.dirname(__file__)), f"{self.deeppavlovpath}/downloads/ontonotes/")
         if not os.path.exists(ontonotespath):
             os.makedirs(ontonotespath)
-        shutil.copyfile(f"{self.webpath}/actual txt/train.txt", f"{self.deeppavlovpath}/downloads/ontonotes/train.txt")
         shutil.copyfile(f"{self.webpath}/actual txt/test.txt", f"{self.deeppavlovpath}/downloads/ontonotes/test.txt")
         shutil.copyfile(f"{self.webpath}/actual txt/valid.txt", f"{self.deeppavlovpath}/downloads/ontonotes/valid.txt")
+        shutil.copyfile(f"{self.webpath}/actual txt/train.txt", f"{self.deeppavlovpath}/downloads/ontonotes/train.txt")
 
     # Сохранение модели с указанным именем
     def savemodel(self, modelname):
@@ -453,18 +455,7 @@ class Server:
             self.rest = self.rest1
             self.rest2.stop()
 
-    # # Получить список доступных моделей
-    # def getmodels(self):
-    #     res = []
-    #     n = 1
-    #     files = os.listdir(self.savepath)
-    #     for f in files:
-    #         date = time.ctime(os.path.getmtime(f"{self.savepath}/{f}"))
-    #         model = dict(name=f, date=date, num = n)
-    #         n += 1
-    #         res.append(model)
-    #     return res
-
+    # Конвертация времени обучения
     @staticmethod
     def convert_to_preferred_format(sec):
         sec = sec % (24 * 3600)
@@ -474,7 +465,7 @@ class Server:
         sec %= 60
         return "%02d:%02d:%02d" % (hour, min, sec)
 
-
+    # Получить список доступных моделей
     def getmodels(self):
         res = []
         n = 1
@@ -482,7 +473,7 @@ class Server:
         for f in files:
             date = time.ctime(os.path.getmtime(f"{self.savepath}/{f}"))
             logpath = f'{self.savepath}/{f}/models/ner_ontonotes_bert_mult/logs/valid_log'
-            if os.path.exists(logpath):
+            if os.path.exists(logpath) and len(os.listdir(logpath)):
                 files = os.listdir(logpath)
                 logfile = files[0]
                 if len(files) > 1:
