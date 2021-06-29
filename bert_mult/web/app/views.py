@@ -18,7 +18,7 @@ def test():
             resArray.append(server.devParagraphREST(paragraph))
         tokensType = db.session.query(TokenType).all() # получение списка сущностей из базы данных
         html = server.reshtml(resArray, tokensType) # размеченный html код текста с сущностями
-        return render_template('test.html', textarray=resArray, types=tokensType, entitytext=html)
+        return render_template('test.html', textarray=resArray, types=tokensType, entitytext=html, text=text)
     else:
         return render_template('test.html')
 
